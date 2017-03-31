@@ -3,7 +3,10 @@
 from unittest.mock import patch
 import unittest
 import importlib
-import io, os, sys
+import io
+import os
+import sys
+
 
 class Task(unittest.TestCase):
 
@@ -13,24 +16,28 @@ class Task(unittest.TestCase):
         self.fixture_dir = fixture_dir
 
     def setUp(self):
-        self.stdout_files = sorted(f for f in os.listdir(self.fixture_dir) if f.endswith('.a'))
+        self.stdout_files = sorted(
+            f for f in os.listdir(self.fixture_dir) if f.endswith('.a'))
 
     def test_task(self):
         for file_name in self.stdout_files:
             file_name = self.fixture_dir + '/' + file_name
             with self.subTest(file_name):
                 self.wrap_check_task(file_name[:-2], file_name)
- 
+
     def wrap_check_task(self, stdin_file, stdout_file):
         @patch('sys.stdin', open(stdin_file, 'r'))
-        @patch('sys.stdout', io.StringIO())       
+        @patch('sys.stdout', io.StringIO())
         def check_task():
             with open(stdout_file, 'r') as answer:
                 if self.solution_file in sys.modules:
-                    importlib.reload(sys.modules[self.solution_file] )
+                    importlib.reload(sys.modules[self.solution_file])
                 else:
                     importlib.import_module(self.solution_file)
-                self.assertEqual(sys.stdout.getvalue().strip(), ''.join(answer.readlines()).strip())
+                self.assertEqual(
+                    sys.stdout.getvalue().strip(),
+                    ''.join(answer.readlines()).strip()
+                )
                 sys.stdin.close()
         check_task()
 
